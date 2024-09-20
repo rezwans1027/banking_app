@@ -1,11 +1,12 @@
+import AuthForm from '@/components/AuthForm'
 import React from 'react'
 
-type Props = {}
-
-const page = (props: Props) => {
+const SignIn = () => {
   return (
-    <div>page</div>
+    <section className='flex-center size-full max-sm:px-6'>
+      <AuthForm type='sign-in' />
+    </section>
   )
 }
 
-export default page
+export default SignIn
