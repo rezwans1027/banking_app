@@ -20,12 +20,13 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getLoggedInUser, signIn, signUp } from "@/lib/actions/user.actions";
+import PlaidLink from "./PlaidLink";
 
 const authFormSchema = (type: String) =>
   z.object({
     firstName: type === "sign-in" ? z.string().optional() : z.string().min(2),
     lastName: type === "sign-in" ? z.string().optional() : z.string().min(2),
-    address:
+    address1:
       type === "sign-in" ? z.string().optional() : z.string().min(2).max(100),
     state:
       type === "sign-in" ? z.string().optional() : z.string().min(2).max(2),
@@ -50,7 +51,7 @@ const AuthForm = ({ type }: { type: string }) => {
       password: "",
       firstName: "",
       lastName: "",
-      address: "",
+      address1: "",
       city: "",
       state: "",
       postalCode: "",
@@ -65,8 +66,21 @@ const AuthForm = ({ type }: { type: string }) => {
 
     try {
       // sign up with appwrite & create plaid token
+      const userData = {
+        email: data.email!,
+        password: data.password!,
+        firstName: data.firstName!,
+        lastName: data.lastName!,
+        address1: data.address1!,
+        city: data.city!,
+        state: data.state!,
+        postalCode: data.postalCode!,
+        dateOfBirth: data.dateOfBirth!,
+        ssn: data.ssn!,
+      }; // helps avoid typescript error of undefined values in data
+
       if (type === "sign-up") {
-        const newUser = await signUp(data);
+        const newUser = await signUp(userData);
         setUser(newUser);
       }
 
@@ -75,8 +89,6 @@ const AuthForm = ({ type }: { type: string }) => {
           email: data.email,
           password: data.password,
         });
-
-        console.log("RESPONSE: " + response);
 
         if (response) {
           router.push("/");
@@ -116,67 +128,26 @@ const AuthForm = ({ type }: { type: string }) => {
         </div>
       </header>
       {user ? (
-        <div className="flex flex-col gap-4">{/* PlaidLink */}</div>
+      <div className="flex flex-col gap-4">
+        <PlaidLink user={user} variant="primary" />
+      </div>
       ) : (
-        <>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {type === "sign-up" && (
-                <>
-                  <div className="flex gap-4">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <div className="form-item">
-                          <FormLabel className="form-label">
-                            First Name
-                          </FormLabel>
-                          <div className="flex w-full flex-col">
-                            <FormControl>
-                              <Input
-                                placeholder="Enter your first name"
-                                className="input-class"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="form-message mt-2" />
-                          </div>
-                        </div>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <div className="form-item">
-                          <FormLabel className="form-label">
-                            Last Name
-                          </FormLabel>
-                          <div className="flex w-full flex-col">
-                            <FormControl>
-                              <Input
-                                placeholder="Enter your last name"
-                                className="input-class"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="form-message mt-2" />
-                          </div>
-                        </div>
-                      )}
-                    />
-                  </div>
+      <>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {type === "sign-up" && (
+              <>
+                <div className="flex gap-4">
                   <FormField
                     control={form.control}
-                    name="address"
+                    name="firstName"
                     render={({ field }) => (
                       <div className="form-item">
-                        <FormLabel className="form-label">Address</FormLabel>
+                        <FormLabel className="form-label">First Name</FormLabel>
                         <div className="flex w-full flex-col">
                           <FormControl>
                             <Input
-                              placeholder="Enter your address"
+                              placeholder="Enter your first name"
                               className="input-class"
                               {...field}
                             />
@@ -188,14 +159,14 @@ const AuthForm = ({ type }: { type: string }) => {
                   />
                   <FormField
                     control={form.control}
-                    name="city"
+                    name="lastName"
                     render={({ field }) => (
                       <div className="form-item">
-                        <FormLabel className="form-label">City</FormLabel>
+                        <FormLabel className="form-label">Last Name</FormLabel>
                         <div className="flex w-full flex-col">
                           <FormControl>
                             <Input
-                              placeholder="Enter your city"
+                              placeholder="Enter your last name"
                               className="input-class"
                               {...field}
                             />
@@ -205,163 +176,202 @@ const AuthForm = ({ type }: { type: string }) => {
                       </div>
                     )}
                   />
-                  <div className="flex gap-4">
-                    <FormField
-                      control={form.control}
-                      name="state"
-                      render={({ field }) => (
-                        <div className="form-item">
-                          <FormLabel className="form-label">State</FormLabel>
-                          <div className="flex w-full flex-col">
-                            <FormControl>
-                              <Input
-                                placeholder="Example: NY"
-                                className="input-class"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="form-message mt-2" />
-                          </div>
-                        </div>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="postalCode"
-                      render={({ field }) => (
-                        <div className="form-item">
-                          <FormLabel className="form-label">
-                            Postal Code
-                          </FormLabel>
-                          <div className="flex w-full flex-col">
-                            <FormControl>
-                              <Input
-                                placeholder="Example: 11101"
-                                className="input-class"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="form-message mt-2" />
-                          </div>
-                        </div>
-                      )}
-                    />
-                  </div>
-                  <div className="flex gap-4">
-                    <FormField
-                      control={form.control}
-                      name="dateOfBirth"
-                      render={({ field }) => (
-                        <div className="form-item">
-                          <FormLabel className="form-label">
-                            Date of Birth
-                          </FormLabel>
-                          <div className="flex w-full flex-col">
-                            <FormControl>
-                              <Input
-                                placeholder="mm-dd-yyyy"
-                                className="input-class"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="form-message mt-2" />
-                          </div>
-                        </div>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="ssn"
-                      render={({ field }) => (
-                        <div className="form-item">
-                          <FormLabel className="form-label">SSN</FormLabel>
-                          <div className="flex w-full flex-col">
-                            <FormControl>
-                              <Input
-                                placeholder="Example: 1234"
-                                className="input-class"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage className="form-message mt-2" />
-                          </div>
-                        </div>
-                      )}
-                    />
-                  </div>
-                </>
-              )}
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <div className="form-item">
-                    <FormLabel className="form-label">Email</FormLabel>
-                    <div className="flex w-full flex-col">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your email"
-                          className="input-class"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="form-message mt-2" />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="address1"
+                  render={({ field }) => (
+                    <div className="form-item">
+                      <FormLabel className="form-label">Address</FormLabel>
+                      <div className="flex w-full flex-col">
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your address"
+                            className="input-class"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="form-message mt-2" />
+                      </div>
                     </div>
-                  </div>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <div className="form-item">
-                    <FormLabel className="form-label">Password</FormLabel>
-                    <div className="flex w-full flex-col">
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your password"
-                          className="input-class"
-                          {...field}
-                          type="password"
-                        />
-                      </FormControl>
-                      <FormMessage className="form-message mt-2" />
-                    </div>
-                  </div>
-                )}
-              />
-              <div className="flex flex-col gap-4">
-                <Button type="submit" disabled={isLoading} className="form-btn">
-                  {isLoading ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      &nbsp; Loading...
-                    </>
-                  ) : type === "sign-in" ? (
-                    "Sign in"
-                  ) : (
-                    "Sign up"
                   )}
-                </Button>
-              </div>
-            </form>
-          </Form>
+                />
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <div className="form-item">
+                      <FormLabel className="form-label">City</FormLabel>
+                      <div className="flex w-full flex-col">
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your city"
+                            className="input-class"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage className="form-message mt-2" />
+                      </div>
+                    </div>
+                  )}
+                />
+                <div className="flex gap-4">
+                  <FormField
+                    control={form.control}
+                    name="state"
+                    render={({ field }) => (
+                      <div className="form-item">
+                        <FormLabel className="form-label">State</FormLabel>
+                        <div className="flex w-full flex-col">
+                          <FormControl>
+                            <Input
+                              placeholder="Example: NY"
+                              className="input-class"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="form-message mt-2" />
+                        </div>
+                      </div>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="postalCode"
+                    render={({ field }) => (
+                      <div className="form-item">
+                        <FormLabel className="form-label">
+                          Postal Code
+                        </FormLabel>
+                        <div className="flex w-full flex-col">
+                          <FormControl>
+                            <Input
+                              placeholder="Example: 11101"
+                              className="input-class"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="form-message mt-2" />
+                        </div>
+                      </div>
+                    )}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <FormField
+                    control={form.control}
+                    name="dateOfBirth"
+                    render={({ field }) => (
+                      <div className="form-item">
+                        <FormLabel className="form-label">
+                          Date of Birth
+                        </FormLabel>
+                        <div className="flex w-full flex-col">
+                          <FormControl>
+                            <Input
+                              placeholder="mm-dd-yyyy"
+                              className="input-class"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="form-message mt-2" />
+                        </div>
+                      </div>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="ssn"
+                    render={({ field }) => (
+                      <div className="form-item">
+                        <FormLabel className="form-label">SSN</FormLabel>
+                        <div className="flex w-full flex-col">
+                          <FormControl>
+                            <Input
+                              placeholder="Example: 1234"
+                              className="input-class"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage className="form-message mt-2" />
+                        </div>
+                      </div>
+                    )}
+                  />
+                </div>
+              </>
+            )}
 
-          <footer className="flex justify-center gap-1">
-            <p className="text-14 font-normal text-gray-600">
-              {type === "sign-in"
-                ? "Don't have an account?"
-                : "Already have an account?"}
-            </p>
-            <Link
-              className="form-link"
-              href={type === "sign-in" ? "/sign-up" : "sign-in"}
-            >
-              {type === "sign-in" ? "Sign up" : "Sign in"}
-            </Link>
-          </footer>
-        </>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <div className="form-item">
+                  <FormLabel className="form-label">Email</FormLabel>
+                  <div className="flex w-full flex-col">
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your email"
+                        className="input-class"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="form-message mt-2" />
+                  </div>
+                </div>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <div className="form-item">
+                  <FormLabel className="form-label">Password</FormLabel>
+                  <div className="flex w-full flex-col">
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your password"
+                        className="input-class"
+                        {...field}
+                        type="password"
+                      />
+                    </FormControl>
+                    <FormMessage className="form-message mt-2" />
+                  </div>
+                </div>
+              )}
+            />
+            <div className="flex flex-col gap-4">
+              <Button type="submit" disabled={isLoading} className="form-btn">
+                {isLoading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    &nbsp; Loading...
+                  </>
+                ) : type === "sign-in" ? (
+                  "Sign in"
+                ) : (
+                  "Sign up"
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+
+        <footer className="flex justify-center gap-1">
+          <p className="text-14 font-normal text-gray-600">
+            {type === "sign-in"
+              ? "Don't have an account?"
+              : "Already have an account?"}
+          </p>
+          <Link
+            className="form-link"
+            href={type === "sign-in" ? "/sign-up" : "sign-in"}
+          >
+            {type === "sign-in" ? "Sign up" : "Sign in"}
+          </Link>
+        </footer>
+      </>
       )}
     </section>
   );
