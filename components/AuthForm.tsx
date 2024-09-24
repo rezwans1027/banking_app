@@ -269,7 +269,7 @@ const AuthForm = ({ type }: { type: string }) => {
                         <div className="flex w-full flex-col">
                           <FormControl>
                             <Input
-                              placeholder="mm-dd-yyyy"
+                              placeholder="yyyy-mm-dd"
                               className="input-class"
                               {...field}
                             />

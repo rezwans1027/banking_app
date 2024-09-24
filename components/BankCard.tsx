@@ -27,7 +27,7 @@ const BankCard = ({
             </div>
             <p className="text-14 font-semibold tracking=[1.1px] text-white">
             ●●●● ●●●● ●●●● &nbsp;
-              <span className="text-16">1234{account.mask}</span>
+              <span className="text-16">{account.mask}</span>
             </p>
           </article>
         </div>
