@@ -1,63 +1,21 @@
-// import React, { useCallback, useEffect, useState } from "react";
-// import { Button } from "./ui/button";
-// import { PlaidLinkOnSuccess, PlaidLinkOptions, usePlaidLink } from "react-plaid-link";
-// import { useRouter } from "next/navigation";
-// import { createLinkToken, exchangePublicToken } from "@/lib/actions/user.actions";
-// import { parseStringify } from "@/lib/utils";
-
-// const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
-//   const [token, setToken] = useState("");
-//   const router = useRouter();
-
-//   useEffect(() => {
-//     const getLinkToken = async () => {
-//       const linkToken = await createLinkToken(user)
-//       setToken(linkToken);
-//     };
-
-//     getLinkToken();
-//   }, [user]);
-
-//   const onSuccess = useCallback<PlaidLinkOnSuccess>(
-//     async (public_token: string) => {
-//       await exchangePublicToken({publicToken: public_token, user})
-//       router.push("/");
-//     },
-//     [user]
-//   );
-
-//   const config: PlaidLinkOptions = {
-//     token,
-//     onSuccess,
-//   };
-
-//   const { open, ready, } = usePlaidLink(config);
-
-//   return (
-//     <>
-//       {variant === "primary" ? (
-//         <Button className="plaidlink-primary" onClick={() => open()} disabled={!ready}>Connect bank</Button>
-//       ) : variant === "ghost" ? (
-//         <Button>Connect bank</Button>
-//       ) : (
-//         <Button>Connect bank</Button>
-//       )}
-//     </>
-//   );
-// };
-
-// export default PlaidLink;
-
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { PlaidLinkOnSuccess, PlaidLinkOptions, usePlaidLink } from "react-plaid-link";
+import {
+  PlaidLinkOnSuccess,
+  PlaidLinkOptions,
+  usePlaidLink,
+} from "react-plaid-link";
 import { useRouter } from "next/navigation";
-import { createLinkToken, exchangePublicToken } from "@/lib/actions/user.actions";
+import {
+  createLinkToken,
+  exchangePublicToken,
+} from "@/lib/actions/user.actions";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
   const [token, setToken] = useState("");
-  const [isLinking, setIsLinking] = useState(false); 
+  const [isLinking, setIsLinking] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -77,7 +35,7 @@ const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
         router.push("/");
       } catch (error) {
         console.error(error);
-        setIsLinking(false); 
+        setIsLinking(false);
       }
     },
     [user, router]
@@ -96,7 +54,7 @@ const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
         <Button
           className="plaidlink-primary"
           onClick={() => open()}
-          disabled={!ready || isLinking} 
+          disabled={!ready || isLinking}
         >
           {isLinking ? (
             <>
@@ -108,13 +66,34 @@ const PlaidLink = ({ user, variant }: PlaidLinkProps) => {
           )}
         </Button>
       ) : variant === "ghost" ? (
-        <Button>Connect bank</Button>
+        <Button
+          className="plaidlink-ghost"
+          variant="ghost"
+          onClick={() => open()}
+        >
+          <Image
+            src={"/icons/connect-bank.svg"}
+            width={24}
+            height={24}
+            alt="Connect Bank"
+          />
+          <p className="text-[16px] font-semibold hidden xl:block text-black-2">
+            Connect bank
+          </p>
+        </Button>
       ) : (
-        <Button>Connect bank</Button>
+        <Button className="plaidlink-default p-3 mt-[6.2px]" onClick={() => open()}>
+          <Image
+            src={"/icons/connect-bank.svg"}
+            width={24}
+            height={24}
+            alt="Connect Bank"
+          />
+          <p className="text-[16px] hidden xl:block font-semibold text-black-2">Connect bank</p>
+        </Button>
       )}
     </>
   );
 };
 
 export default PlaidLink;
-
